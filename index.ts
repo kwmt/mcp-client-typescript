@@ -1,3 +1,4 @@
+import readline from "node:readline/promises";
 import Anthropic from "@anthropic-ai/sdk";
 import type { MessageParam } from "@anthropic-ai/sdk/resources.mjs";
 import type { Tool } from "@anthropic-ai/sdk/src/resources/messages/messages.js";
@@ -111,5 +112,26 @@ class MCPClient {
       }
     }
     return finalText.join("\n");
+  }
+
+  async chatLoop() {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    try {
+      console.log("\nMCP Client Started!");
+      console.log("Type your queries or 'quit' to exit.");
+      while (true) {
+        const message = await rl.question("\nQuery: ");
+        if (message.toLowerCase() === "quit") {
+          break;
+        }
+        const response = await this.processQuery(message);
+        console.log(`\n${response}`);
+      }
+    } finally {
+      rl.close();
+    }
   }
 }
