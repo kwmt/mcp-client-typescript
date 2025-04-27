@@ -16,8 +16,8 @@ if (!ANTHROPIC_API_KEY) {
 class MCPClient {
   private mcp: Client;
   private anthropic: Anthropic;
-  private transport: StdioClientTransport;
-  private tools: Tool[];
+  private transport: StdioClientTransport | null = null;
+  private tools: Tool[] = [];
 
   constructor() {
     this.anthropic = new Anthropic({
@@ -134,4 +134,22 @@ class MCPClient {
       rl.close();
     }
   }
+  async cleanup() {
+    await this.mcp.close();
+  }
 }
+async function main() {
+  if (process.argv.length < 3) {
+    console.error("Usage: node index.js <path_to_server_script>");
+    process.exit(1);
+  }
+  const mcpClinet = new MCPClient();
+  try {
+    await mcpClinet.connectToServer(process.argv[2]);
+    await mcpClinet.chatLoop();
+  } finally {
+    await mcpClinet.cleanup();
+    process.exit(0);
+  }
+}
+main();
